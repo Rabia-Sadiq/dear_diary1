@@ -11,7 +11,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 logging.basicConfig(level=logging.DEBUG)
 
 class Base(DeclarativeBase):
-    pass
+    pass 
 
 db = SQLAlchemy(model_class=Base)
 
