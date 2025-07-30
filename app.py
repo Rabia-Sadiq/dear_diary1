@@ -60,7 +60,8 @@ def submit_thought():
     
     try:
         # Create new thought entry
-        thought = Thought(content=content)
+        thought = Thought()
+        thought.content = content
         db.session.add(thought)
         db.session.commit()
         
