@@ -43,24 +43,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Form validation
-    const thoughtForm = document.querySelector('.thought-form');
+    // Form validation and submission
+    const thoughtForm = document.querySelector('#thought-form');
     if (thoughtForm) {
-        thoughtForm.addEventListener('submit', function(e) {
+        thoughtForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
             const content = thoughtTextarea.value.trim();
             
             if (!content) {
-                e.preventDefault();
-                alert('Please write something before submitting.');
+                showAlert('Please write something before submitting.', 'error');
                 thoughtTextarea.focus();
-                return false;
+                return;
             }
             
             if (content.length > 2000) {
-                e.preventDefault();
-                alert('Your thought is too long. Please keep it under 2000 characters.');
+                showAlert('Your thought is too long. Please keep it under 2000 characters.', 'error');
                 thoughtTextarea.focus();
-                return false;
+                return;
             }
             
             // Show loading state
@@ -68,6 +68,34 @@ document.addEventListener('DOMContentLoaded', function() {
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sharing...';
+            }
+            
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ thought: content })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Redirect to thank you page
+                    window.location.href = '/thankyou.html';
+                } else {
+                    showAlert(result.error || 'An error occurred while submitting your thought.', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting thought:', error);
+                showAlert('Network error. Please check your connection and try again.', 'error');
+            } finally {
+                // Restore button state
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Share My Thought';
+                }
             }
         });
     }
@@ -174,7 +202,74 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Check admin authentication status
+    checkAdminAuth();
 });
+
+// Alert system
+function showAlert(message, type) {
+    const alertContainer = document.getElementById('alert-container');
+    if (!alertContainer) return;
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    alertContainer.appendChild(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Check admin authentication
+function checkAdminAuth() {
+    const adminLink = document.getElementById('admin-link');
+    const logoutLink = document.getElementById('logout-link');
+    
+    if (document.cookie.includes('admin-auth=true')) {
+        if (adminLink) adminLink.style.display = 'block';
+        if (logoutLink) logoutLink.style.display = 'block';
+    }
+}
+
+// Admin logout
+async function adminLogout() {
+    try {
+        const response = await fetch('/api/admin-logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            showAlert('You have been logged out.', 'info');
+            // Hide admin links
+            const adminLink = document.getElementById('admin-link');
+            const logoutLink = document.getElementById('logout-link');
+            if (adminLink) adminLink.style.display = 'none';
+            if (logoutLink) logoutLink.style.display = 'none';
+            
+            // Redirect to home if on admin page
+            if (window.location.pathname.includes('admin')) {
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            }
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        showAlert('Error logging out. Please try again.', 'error');
+    }
+}
 
 // Utility function to format dates nicely
 function formatDate(dateString) {
