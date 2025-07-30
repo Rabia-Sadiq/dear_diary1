@@ -2,7 +2,7 @@
 
 ## Overview
 
-Dear Diary is a Flask-based web application that provides a safe, anonymous space for users to share their thoughts and feelings. The application features a simple, elegant interface with a cream/brown aesthetic that creates a warm, diary-like atmosphere. Users can submit anonymous thoughts through a web form, and administrators can view all submissions through a password-protected admin panel.
+Dear Diary is a Node.js Express-based web application that provides a safe, anonymous space for users to share their thoughts and feelings. The application features a simple, elegant interface with a cream/brown aesthetic that creates a warm, diary-like atmosphere. Users can submit anonymous thoughts through a web form, and administrators can view all submissions through a password-protected admin panel.
 
 ## User Preferences
 
@@ -18,39 +18,39 @@ Preferred communication style: Simple, everyday language.
 - **JavaScript**: Vanilla JavaScript for client-side interactions (character counting, form validation, auto-resize textarea)
 
 ### Backend Architecture
-- **Framework**: Flask (Python web framework)
-- **Database ORM**: SQLAlchemy with Flask-SQLAlchemy extension
-- **Session Management**: Flask's built-in session handling with secret key
-- **Security**: Werkzeug for password hashing and basic authentication
-- **Deployment**: ProxyFix middleware for handling reverse proxy headers
+- **Framework**: Express.js (Node.js web framework)
+- **Database**: SQLite3 with native SQL queries
+- **Session Management**: Express-session middleware with secret key
+- **Security**: Basic password authentication for admin access
+- **Template Engine**: EJS for server-side rendering
 
 ### Data Storage
-- **Primary Database**: SQLite (default) with configurable DATABASE_URL for other databases
-- **Connection Pooling**: SQLAlchemy engine options with pool recycling and pre-ping
-- **Schema**: Single `Thought` model with id, content, and timestamp fields
+- **Primary Database**: SQLite with native sqlite3 module
+- **Connection**: Direct database connection with automatic table creation
+- **Schema**: Single `thoughts` table with id, content, and created_at fields
 
 ## Key Components
 
-### Models
-- **Thought Model**: Stores anonymous thoughts with automatic timestamps
+### Database Schema
+- **Thoughts Table**: Stores anonymous thoughts with automatic timestamps
   - Fields: id (primary key), content (text), created_at (datetime)
-  - Methods: formatted date display, content preview truncation
+  - Features: Date formatting handled in server-side rendering
 
 ### Routes and Views
-- **Home Route** (`/`): Displays thought submission form
+- **Home Route** (`/`): Displays thought submission form using EJS template
 - **Submit Route** (`/submit`): Handles POST requests for new thoughts
 - **Admin Routes**: Password-protected admin panel for viewing all thoughts
-- **Authentication**: Simple password-based admin access with session management
+- **Authentication**: Simple password-based admin access with Express sessions
 
-### Templates
+### Templates (EJS)
 - **Base Template**: Common layout with navigation, flash messages, and styling
 - **Index Template**: Main page with thought submission form and character counter
 - **Thank You Template**: Confirmation page after successful submission
 - **Admin Templates**: Login form and thought management interface
 
 ### Static Assets
-- **CSS**: Custom styling with CSS variables for consistent theming
-- **JavaScript**: Client-side enhancements for form interaction and validation
+- **CSS**: Custom styling with CSS variables for consistent theming (served from public/css/)
+- **JavaScript**: Client-side enhancements for form interaction and validation (served from public/js/)
 
 ## Data Flow
 
@@ -62,7 +62,7 @@ Preferred communication style: Simple, everyday language.
 
 2. **Admin Access Flow**:
    - Admin accesses protected route and enters password
-   - Successful authentication creates admin session
+   - Successful authentication creates Express session
    - Admin can view chronological list of all submitted thoughts
    - Session-based access control for admin panel
 
@@ -73,28 +73,40 @@ Preferred communication style: Simple, everyday language.
 - **Google Fonts**: Typography (Playfair Display, Cormorant Garamond)
 - **Font Awesome 6.4.0**: Icon library for UI elements
 
-### Python Packages
-- **Flask**: Web framework and templating
-- **Flask-SQLAlchemy**: Database ORM integration
-- **Werkzeug**: Security utilities and WSGI middleware
+### Node.js Packages
+- **Express**: Web framework and routing
+- **EJS**: Template engine for server-side rendering
+- **SQLite3**: Database driver for SQLite
+- **Express-session**: Session management middleware
+- **Body-parser**: Request body parsing middleware
 
 ## Deployment Strategy
 
 ### Environment Configuration
-- **Database**: Configurable via `DATABASE_URL` environment variable
+- **Database**: SQLite database file (dear_diary.db)
 - **Security**: Session secret via `SESSION_SECRET` environment variable
 - **Admin Access**: Admin password via `ADMIN_PASSWORD` environment variable
 - **Fallback**: Development defaults for local testing
 
 ### Production Considerations
-- **Proxy Support**: ProxyFix middleware handles reverse proxy headers
-- **Database Pooling**: Connection pool management for better performance
-- **Logging**: Debug-level logging configured for troubleshooting
-- **Security**: Environment-based secrets and password hashing
+- **Static Files**: Express static middleware serves CSS/JS from public directory
+- **Database**: SQLite file-based database with automatic table creation
+- **Logging**: Console logging for request tracking and troubleshooting
+- **Security**: Environment-based secrets and session management
 
 ### Database Migration
-- **Auto-creation**: Tables created automatically on application startup
-- **SQLAlchemy**: DeclarativeBase for modern SQLAlchemy patterns
-- **Flexibility**: Easy migration to PostgreSQL or other databases via configuration
+- **Auto-creation**: Tables created automatically on application startup using CREATE TABLE IF NOT EXISTS
+- **SQLite**: Native SQLite3 module for direct database operations
+- **Flexibility**: Easy to modify table structure or migrate to other databases
 
-The application follows a traditional MVC pattern with Flask, prioritizing simplicity and ease of deployment while maintaining security for the admin functionality. The design emphasizes user privacy through anonymous submissions and creates a calming, diary-like user experience.
+The application follows a traditional MVC pattern with Express.js, prioritizing simplicity and ease of deployment while maintaining security for the admin functionality. The design emphasizes user privacy through anonymous submissions and creates a calming, diary-like user experience.
+
+## Recent Changes
+
+### July 30, 2025 - Node.js Conversion
+- **Framework Migration**: Converted from Python Flask to Node.js Express
+- **Template Engine**: Migrated from Jinja2 to EJS templates
+- **Database**: Switched from SQLAlchemy ORM to native SQLite3 queries
+- **Session Management**: Replaced Flask sessions with Express-session middleware
+- **File Structure**: Reorganized templates to `views/` and static files to `public/`
+- **Functionality**: All original features maintained including anonymous submissions, admin panel, and cream/brown design theme
